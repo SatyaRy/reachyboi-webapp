@@ -1,0 +1,47 @@
+ABA PayWay v2 Integration (Sandbox)
+-----------------------------------
+Base URL: https://checkout-sandbox.payway.com.kh
+Purchase endpoint: POST /api/payment-gateway/v1/payments/purchase (multipart/form-data)
+Check transaction endpoint: POST /api/payment-gateway/v1/payments/check-transaction
+
+Env vars (see .env.example):
+- PAYWAY_BASE_URL=https://checkout-sandbox.payway.com.kh
+- PAYWAY_MERCHANT_ID=...
+- PAYWAY_PUBLIC_KEY=...            # Used as HMAC secret per spec
+- PAYWAY_RSA_PRIVATE_KEY=...       # Keep private
+- PAYWAY_CHECK_URL=...             # Optional override for check endpoint
+
+Request fields we send (purchase):
+- req_time: UTC YYYYmmddHis
+- merchant_id
+- tran_id: generated UUID
+- amount: plan price (e.g., 12.00)
+- payment_option: default abapay (can be set in body)
+- return_url: <origin>/subscribe?status=success&order=<tran_id>
+- cancel_url: <origin>/subscribe?status=cancelled&order=<tran_id>
+- continue_success_url: same as return_url
+- currency: USD
+- hash: base64(HMAC-SHA512(concat of included fields in order, secret=PAYWAY_PUBLIC_KEY))
+  Order used: req_time, merchant_id, tran_id, amount, return_url, cancel_url, continue_success_url, currency
+- Sent as multipart/form-data (FormData)
+
+Response handling:
+- Accepts payment_url/redirect_url/deeplink/qr_url/url; stored as checkout_url.
+- payway_transaction_id stored from tran_id/transaction_id/order_id.
+- If error_code == 6, surface “wrong domain” (whitelisting issue).
+- Subscriptions table records inserted with status pending/failed and checkout URL.
+
+Webhook (/api/subscriptions/webhook):
+- Accepts PayWay pushback (expects tran_id/transaction_id/order_id).
+- Calls Check Transaction API (merchant_id + tran_id) when configured.
+- Marks subscription active/pending and sets next_billing_at on success (~30 days).
+- Returns JSON with status and handles support fallback.
+
+Code touchpoints:
+- API: src/app/api/subscriptions/route.ts (purchase), src/app/api/subscriptions/webhook/route.ts (pushback)
+- Env template: .env.example (PayWay vars)
+- UI: /subscribe page uses API and redirects to checkout URL; shows errors with Telegram support @frost_4x.
+
+Testing notes:
+- Use sandbox creds and ensure domain whitelisted in PayWay to avoid error 6.
+- Verify webhook URL registered in PayWay (e.g., https://<your-domain>/api/subscriptions/webhook).
