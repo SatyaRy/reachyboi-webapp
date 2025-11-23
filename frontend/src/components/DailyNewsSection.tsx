@@ -28,7 +28,22 @@ export default function DailyNewsSection() {
     load();
   }, []);
 
-  if (news.length === 0) return null;
+  if (news.length === 0) {
+    return (
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-white">Daily News</h2>
+          <Link
+            href="/admin/daily-news"
+            className="text-sm text-primary-200 hover:text-white"
+          >
+            Admin: add update →
+          </Link>
+        </div>
+        <p className="text-sm text-slate-400">No news yet. Check back soon.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-4">

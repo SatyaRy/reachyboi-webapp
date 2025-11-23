@@ -2,8 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase-server";
 import * as bcrypt from "bcrypt";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+      return NextResponse.json(
+        { error: "Server configuration missing Supabase environment variables" },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { email, password, exness_account_id } = body;
     const normalizedEmail = (email || "").trim().toLowerCase();

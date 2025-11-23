@@ -143,6 +143,9 @@ export const updateVps = async (
       | "memory_usage"
       | "storage_usage"
       | "notes"
+      | "start_date"
+      | "expires_at"
+      | "credentials"
     >
   >
 ): Promise<VpsInstance> => {
@@ -154,6 +157,20 @@ export const updateVps = async (
   if (!response.ok) throw new Error("Failed to update VPS");
   const data = await response.json();
   return data.vps;
+};
+
+export const deleteVps = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE}/admin/vps/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) throw new Error("Failed to delete VPS");
+};
+
+export const fetchMyVps = async (): Promise<VpsInstance[]> => {
+  const response = await fetch(`${API_BASE}/vps`, { cache: "no-store" });
+  if (!response.ok) throw new Error("Failed to fetch VPS");
+  const data = await response.json();
+  return data.vps || [];
 };
 
 // Subscriptions

@@ -26,7 +26,22 @@ export default function LatestPosts() {
     load();
   }, []);
 
-  if (posts.length === 0) return null;
+  if (posts.length === 0) {
+    return (
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-white">Latest Posts</h2>
+          <Link
+            href="/admin/posts"
+            className="text-sm text-primary-200 hover:text-white"
+          >
+            Admin: share more →
+          </Link>
+        </div>
+        <p className="text-sm text-slate-400">No posts yet. Stay tuned.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-4">

@@ -8,8 +8,13 @@ import {
 } from "@/lib/api";
 import type { Subscription } from "@/types";
 
-const PLAN_PRICE = 12;
+const PLAN_PRICE = 11;
 const SUPPORT = "t.me/frost_4x";
+const PLANS = [
+  { name: "1 month", price: 11 },
+  { name: "6 months", price: 10 },
+  { name: "1 year", price: 9 },
+];
 
 export default function SubscribePage() {
   const [subs, setSubs] = useState<Subscription[]>([]);
@@ -38,14 +43,14 @@ export default function SubscribePage() {
     load();
   }, []);
 
-  const handleCreate = async () => {
+  const handleCreate = async (plan: { name: string; price: number }) => {
     setError("");
     setSuccess("");
     setCreating(true);
     try {
       const { subscription, checkout_url } = await createSubscription({
-        plan_name: "Standard",
-        price: PLAN_PRICE,
+        plan_name: plan.name,
+        price: plan.price,
       });
       setSubs((prev) => [subscription, ...prev]);
       if (checkout_url) {
@@ -68,10 +73,7 @@ export default function SubscribePage() {
     <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
       <div className="space-y-2 text-center">
         <p className="text-xs uppercase text-slate-400">Subscription</p>
-        <h1 className="text-4xl font-bold text-white">Standard Plan</h1>
-        <p className="text-slate-300">
-          $12/month via ABA PayWay to rent your dedicated VPS and unlock all learning content.
-        </p>
+        <h1 className="text-4xl font-bold text-white">Choose your plan</h1>
       </div>
 
       <div className="card p-6 space-y-4">
@@ -87,28 +89,30 @@ export default function SubscribePage() {
         )}
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-300">Standard monthly access</p>
-            <p className="text-3xl font-bold text-white mt-1">${PLAN_PRICE}/mo</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Powered by ABA PayWay. Need help?{" "}
-              <a
-                href={`https://${SUPPORT}`}
-                className="text-primary-200 hover:text-white"
-                target="_blank"
-                rel="noreferrer"
+          <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+            {PLANS.map((plan) => (
+              <button
+                key={plan.name}
+                onClick={() => handleCreate(plan)}
+                disabled={creating}
+                className="rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-left hover:border-primary-400/60 hover:text-white transition disabled:opacity-60"
               >
-                @{SUPPORT.split("/").pop()}
-              </a>
-            </p>
+                <p className="text-sm font-semibold text-white">{plan.name}</p>
+                <p className="text-2xl font-bold text-white mt-1">${plan.price}/mo</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Powered by ABA PayWay. Need help?{" "}
+                  <a
+                    href={`https://${SUPPORT}`}
+                    className="text-primary-200 hover:text-white"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    @{SUPPORT.split("/").pop()}
+                  </a>
+                </p>
+              </button>
+            ))}
           </div>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="btn-primary px-6 py-3 text-sm font-semibold disabled:opacity-60"
-          >
-            {creating ? "Redirecting..." : "Pay with ABA PayWay"}
-          </button>
         </div>
       </div>
 

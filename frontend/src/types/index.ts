@@ -92,6 +92,8 @@ export interface VpsInstance {
   cpu_usage?: number | null;
   memory_usage?: number | null;
   storage_usage?: number | null;
+  start_date?: string | null;
+  expires_at?: string | null;
   subscription_status: string;
   next_billing_at?: string | null;
   notes?: string | null;
